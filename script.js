@@ -17,10 +17,11 @@ function showTime(ms) {
     String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
 }
 
-function stop() {
+// Stop counting and set the button text ('Start' or 'Resume')
+function stop(label) {
   clearInterval(intervalId);
   intervalId = null;
-  startPauseBtn.textContent = 'Start';
+  startPauseBtn.textContent = label;
 }
 
 // Work out the time left from the real clock, so it stays correct
@@ -29,7 +30,7 @@ function tick() {
   remainingMs = Math.max(0, endTime - Date.now());
   showTime(remainingMs);
   if (remainingMs === 0) {
-    stop();
+    stop('Start');
     startPauseBtn.disabled = true;
   }
 }
@@ -45,12 +46,12 @@ startPauseBtn.addEventListener('click', () => {
     start();
   } else {
     tick();
-    stop();
+    if (intervalId !== null) stop('Resume');
   }
 });
 
 resetBtn.addEventListener('click', () => {
-  stop();
+  stop('Start');
   remainingMs = DURATION_MS;
   startPauseBtn.disabled = false;
   showTime(remainingMs);
