@@ -1,5 +1,6 @@
-// Timer length: 25 minutes
-const DURATION_MS = 25 * 60 * 1000;
+// TEMPORARY TEST SETTING: 15 seconds, so it is quick to test.
+// The real length is 25 minutes: change this line back to 25 * 60 * 1000.
+const DURATION_MS = 15 * 1000;
 
 const timeEl = document.getElementById('time');
 const startPauseBtn = document.getElementById('start-pause');
