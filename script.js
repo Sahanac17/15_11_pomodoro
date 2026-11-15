@@ -8,7 +8,7 @@ const resetBtn = document.getElementById('reset');
 const artEl = document.getElementById('art');
 const restartBtn = document.getElementById('restart');
 const detailsEl = document.getElementById('details');
-const statusEl = document.getElementById('status');
+const frameEl = document.getElementById('frame');
 const titleEl = document.getElementById('painting-title');
 const infoEl = document.getElementById('painting-info');
 const linkEl = document.getElementById('painting-link');
@@ -63,8 +63,8 @@ async function fetchPainting() {
       return {
         image: obj.primaryImageSmall,
         title: obj.title,
-        artist: obj.artistDisplayName || 'Artist not listed',
-        year: obj.objectDate || 'Year not listed',
+        artist: obj.artistDisplayName || 'Unknown',
+        year: obj.objectDate || 'Unknown',
         link: obj.objectURL
       };
     } catch (e) {
@@ -74,22 +74,18 @@ async function fetchPainting() {
   return null;
 }
 
-// Get a new painting. Start waits until it is ready.
+// Get a new painting and show it in the frame.
 async function loadNewPainting() {
   painting = null;
-  artEl.classList.remove('photo');
-  startPauseBtn.disabled = true;
-  statusEl.textContent = 'Loading painting\u2026';
-  statusEl.hidden = false;
+  artEl.hidden = true;
+  artEl.removeAttribute('src');
+  frameEl.classList.add('loading');
   const found = await fetchPainting();
   if (found) {
     painting = found;
-    artEl.style.setProperty('--photo', 'url("' + found.image + '")');
-    artEl.classList.add('photo');
-    statusEl.hidden = true;
-    startPauseBtn.disabled = false;
-  } else {
-    statusEl.textContent = 'Sorry, I could not get a painting. Please reload the page.';
+    artEl.src = found.image;
+    artEl.hidden = false;
+    frameEl.classList.remove('loading');
   }
 }
 

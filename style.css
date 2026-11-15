@@ -24,10 +24,11 @@ main {
   text-align: center;
 }
 
-/* White frame around the painting */
+/* White frame around the painting. It takes the shape of the painting,
+   so the whole painting is shown, never stretched or cut off. */
 .frame {
-  width: 100%;
-  aspect-ratio: 4 / 3;
+  width: fit-content;
+  max-width: 100%;
   background: #fff;
   padding: 10px;
   border-radius: 6px;
@@ -35,20 +36,20 @@ main {
   overflow: hidden;
 }
 
-/* Placeholder painting: coloured circles on a teal gradient */
-.art {
+/* An empty frame while the painting is on its way */
+.frame.loading {
   width: 100%;
-  height: 100%;
-  background:
-    radial-gradient(circle at 30% 40%, #f6c945 0 12%, transparent 13%),
-    radial-gradient(circle at 55% 30%, #f0a830 0 10%, transparent 11%),
-    radial-gradient(circle at 72% 55%, #f6d65a 0 13%, transparent 14%),
-    radial-gradient(circle at 40% 70%, #e8932b 0 11%, transparent 12%),
-    linear-gradient(160deg, #4f8f94, #2f5f73);
-  /* --blur is set by script.js: 14 at the start, 0 when the time is up.
-     The painting grows a little while blurred so the soft edges stay hidden. */
+  aspect-ratio: 4 / 3;
+}
+
+.art {
+  display: block;
+  max-width: 100%;
+  max-height: 55vh;
+  width: auto;
+  height: auto;
+  /* --blur is set by script.js: full blur at the start, none when the time is up. */
   filter: blur(calc(var(--blur, 14) * 1px));
-  transform: scale(calc(1 + var(--blur, 14) * 0.0057));
 }
 
 .time {
@@ -84,22 +85,6 @@ main {
   color: #3d5a47;
 }
 
-.button:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-
-.status {
-  font-size: 14px;
-}
-
-/* When a real painting is loaded it replaces the coloured placeholder */
-.art.photo {
-  background-image: var(--photo);
-  background-size: cover;
-  background-position: center;
-}
-
 /* Painting details: shown only when the timer is finished */
 .details {
   font-size: 14px;
@@ -108,6 +93,8 @@ main {
   background: #fff;
   padding: 12px 18px;
   border-radius: 14px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 .details b {
