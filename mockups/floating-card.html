@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Floating Card</title><style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Helvetica,Arial,sans-serif;color:#2b2f33;padding:24px 16px 48px}
+h1{font-size:22px;margin-bottom:4px}
+.note{color:#555;margin-bottom:24px;font-size:14px}
+h2{font-size:17px;margin:28px 0 12px}
+.row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.item{flex:none}
+.item p{font-size:13px;font-weight:bold;margin:0 0 6px;color:#444}
+.scroll{overflow-x:auto;padding-bottom:8px}
+.dev{border:3px solid #333;background:#fff;overflow:hidden;border-radius:14px}
+.dev.phone{width:300px;height:560px;border-radius:28px;border-width:6px}
+.dev.laptop{width:880px;height:500px}
+.screen{container-type:inline-size;width:100%;height:100%;position:relative}
+.art{position:relative;overflow:hidden;background:
+ radial-gradient(circle at 30% 40%,#f6c945 0 12%,transparent 13%),
+ radial-gradient(circle at 55% 30%,#f0a830 0 10%,transparent 11%),
+ radial-gradient(circle at 72% 55%,#f6d65a 0 13%,transparent 14%),
+ radial-gradient(circle at 40% 70%,#e8932b 0 11%,transparent 12%),
+ linear-gradient(160deg,#4f8f94,#2f5f73)}
+.art.blur{filter:blur(14px);transform:scale(1.08)}
+.artwrap{overflow:hidden}
+.time{font-weight:800;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font:700 15px Helvetica,Arial,sans-serif;padding:12px 24px;border:0;cursor:default}
+.details{font-size:14px;line-height:1.5}
+.details b{display:block;font-size:17px}
+.details a{display:inline-block;margin-top:6px;font-weight:700}
+
+.screen{background:#d9e8f5;display:flex;align-items:center;justify-content:center;padding:4cqi}
+.layout{width:100%;max-height:100%;background:#fff;border-radius:22px;box-shadow:0 14px 34px rgba(50,90,130,.22);overflow:hidden;display:flex;flex-direction:column}
+.artwrap{aspect-ratio:16/10}
+.artwrap .art{width:100%;height:100%}
+.info{display:flex;flex-direction:column;align-items:center;gap:3cqi;padding:5cqi;text-align:center}
+.time{font-size:19cqi;color:#2f5f8a}
+.btn{border-radius:14px}.primary{background:#4a89c8;color:#fff}.second{background:#e6f0fa;color:#2f5f8a}
+.details{background:#eef5fc;border-radius:12px;padding:10px 14px;color:#2f5f8a;width:100%}
+@container (min-width:700px){.layout{width:min(64%,560px)}.time{font-size:8cqi}.info{gap:1.6cqi;padding:2.4cqi}}
+</style></head><body style="background:#eef5fb"><h1>Floating Card</h1><p class="note">One white card floating on pale blue, with painting details as a label. Design mockup only. The picture is a placeholder, and the buttons do not work.</p><h2>Phone</h2><div class="scroll"><div class="row"><div class="item"><p>1. Before starting</p><div class="dev phone"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art blur"></div></div><div class="info"><div class="time">25:00</div><div class="btns"><span class="btn primary">Start</span><span class="btn second">Reset</span></div></div></div></div></div></div><div class="item"><p>2. Timer running</p><div class="dev phone"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art blur"></div></div><div class="info"><div class="time">18:42</div><div class="btns"><span class="btn primary">Pause</span><span class="btn second">Reset</span></div></div></div></div></div></div><div class="item"><p>3. Timer finished</p><div class="dev phone"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art"></div></div><div class="info"><div class="time">00:00</div><div class="btns"><span class="btn primary">Restart session</span></div><div class="details"><b>Painting name</b>Artist name &middot; Year<br><a href="#">Read about this painting</a></div></div></div></div></div></div></div></div><h2>Laptop</h2><div class="scroll"><div class="row"><div class="item"><p>1. Before starting</p><div class="dev laptop"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art blur"></div></div><div class="info"><div class="time">25:00</div><div class="btns"><span class="btn primary">Start</span><span class="btn second">Reset</span></div></div></div></div></div></div><div class="item"><p>2. Timer running</p><div class="dev laptop"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art blur"></div></div><div class="info"><div class="time">18:42</div><div class="btns"><span class="btn primary">Pause</span><span class="btn second">Reset</span></div></div></div></div></div></div><div class="item"><p>3. Timer finished</p><div class="dev laptop"><div class="screen dFloatingCard"><div class="layout"><div class="artwrap"><div class="art"></div></div><div class="info"><div class="time">00:00</div><div class="btns"><span class="btn primary">Restart session</span></div><div class="details"><b>Painting name</b>Artist name &middot; Year<br><a href="#">Read about this painting</a></div></div></div></div></div></div></div></div></body></html>
