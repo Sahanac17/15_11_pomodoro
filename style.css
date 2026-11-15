@@ -84,9 +84,29 @@ main {
   color: #3d5a47;
 }
 
-.button:disabled {
-  opacity: 0.5;
-  cursor: default;
+/* Painting details: shown only when the timer is finished */
+.details {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #3d5a47;
+  background: #fff;
+  padding: 12px 18px;
+  border-radius: 14px;
+}
+
+.details b {
+  display: block;
+  font-size: 17px;
+}
+
+.details a {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 /* Laptop-sized screens: slightly larger timer, a bit more room */

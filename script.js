@@ -6,6 +6,8 @@ const timeEl = document.getElementById('time');
 const startPauseBtn = document.getElementById('start-pause');
 const resetBtn = document.getElementById('reset');
 const artEl = document.getElementById('art');
+const restartBtn = document.getElementById('restart');
+const detailsEl = document.getElementById('details');
 
 // How blurred the painting is at the start (in pixels). It reaches 0 at 00:00.
 const MAX_BLUR = 14;
@@ -30,6 +32,15 @@ function stop(label) {
   startPauseBtn.textContent = label;
 }
 
+// Finished view: only Restart session, plus the painting details.
+// Back to the normal view: Start/Pause and Reset, details hidden.
+function showFinished(finished) {
+  startPauseBtn.hidden = finished;
+  resetBtn.hidden = finished;
+  restartBtn.hidden = !finished;
+  detailsEl.hidden = !finished;
+}
+
 // Work out the time left from the real clock, so it stays correct
 // even when the browser tab is in the background.
 function tick() {
@@ -37,7 +48,7 @@ function tick() {
   showTime(remainingMs);
   if (remainingMs === 0) {
     stop('Start');
-    startPauseBtn.disabled = true;
+    showFinished(true);
   }
 }
 
@@ -56,12 +67,16 @@ startPauseBtn.addEventListener('click', () => {
   }
 });
 
-resetBtn.addEventListener('click', () => {
+// Back to the very start: full time, fully blurred, details hidden.
+function resetAll() {
   stop('Start');
   remainingMs = DURATION_MS;
-  startPauseBtn.disabled = false;
+  showFinished(false);
   showTime(remainingMs);
-});
+}
+
+resetBtn.addEventListener('click', resetAll);
+restartBtn.addEventListener('click', resetAll);
 
 document.addEventListener('visibilitychange', () => {
   if (intervalId !== null) tick();
