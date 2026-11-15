@@ -9,6 +9,7 @@ const artEl = document.getElementById('art');
 const restartBtn = document.getElementById('restart');
 const detailsEl = document.getElementById('details');
 const frameEl = document.getElementById('frame');
+const messageEl = document.getElementById('message');
 const titleEl = document.getElementById('painting-title');
 const infoEl = document.getElementById('painting-info');
 const linkEl = document.getElementById('painting-link');
@@ -20,73 +21,120 @@ const MAX_BLUR = 24;
 const MET = 'https://collectionapi.metmuseum.org/public/collection';
 const SEARCH_WORDS = ['flowers', 'river', 'portrait', 'landscape', 'sky',
                       'garden', 'harbor', 'sunset', 'village', 'still life'];
-const MAX_TRIES = 10;
+const MAX_PAINTINGS = 5;  // how many different paintings to try before giving up
+const WAIT_MS = 10000;   // how long to wait for the Met before giving up
+
+const FRIENDLY_MESSAGE =
+  "We couldn't load a painting right now. You can still use the timer. Refresh the page to try again.";
 
 let painting = null; // the painting for this session: { image, title, artist, year, link }
 const searchCache = {};
 
-async function getJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error('Met API answered ' + response.status);
-  return response.json();
+// Ask the Met for data. If it is slow (over 10 seconds), offline or returns an
+// error, this throws, and the page shows the friendly message.
+// A "not found" answer for one record is fine: that record is just skipped.
+async function getJson(url, notFoundIsOk) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WAIT_MS);
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (response.status === 404 && notFoundIsOk) return null;
+    if (!response.ok) throw new Error('Met API answered ' + response.status);
+    return await response.json();
+  } catch (e) {
+    throw new Error('The Met is not responding');
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-// Wait until the picture has really loaded in the browser.
+// Check that the picture really loads in the browser (true or false).
 function preloadImage(url) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image();
-    img.onload = resolve;
-    img.onerror = () => reject(new Error('image did not load'));
+    let finished = false;
+    const done = (ok) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => done(false), WAIT_MS);
+    img.onload = () => done(img.naturalWidth > 0);
+    img.onerror = () => done(false);
     img.src = url;
   });
 }
 
-// Pick a random painting that is public domain and has an image.
+// Pick a random painting that is public domain and has an image. A record that
+// does not fit is quietly skipped for another one, up to 5 different paintings.
+// Returns the painting, or null if none worked. Throws if the Met is not responding.
 // Everything shown comes straight from the Met's data.
 async function fetchPainting() {
-  for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
-    try {
-      const word = SEARCH_WORDS[Math.floor(Math.random() * SEARCH_WORDS.length)];
-      if (!searchCache[word]) {
-        const found = await getJson(
-          MET + '/v1.1/search?hasImages=true&medium=Paintings&q=' + encodeURIComponent(word));
-        searchCache[word] = found.objectIDs || [];
-      }
-      const ids = searchCache[word];
-      if (ids.length === 0) continue;
-      const id = ids[Math.floor(Math.random() * ids.length)];
-      const obj = await getJson(MET + '/v1/objects/' + id);
-      const usable = obj.isPublicDomain && obj.primaryImageSmall &&
-        obj.title && obj.objectURL && (obj.classification || '').includes('Paintings');
-      if (!usable) continue;
-      await preloadImage(obj.primaryImageSmall);
-      return {
-        image: obj.primaryImageSmall,
-        title: obj.title,
-        artist: obj.artistDisplayName || 'Unknown',
-        year: obj.objectDate || 'Unknown',
-        link: obj.objectURL
-      };
-    } catch (e) {
-      // Try again with another painting.
+  const tried = new Set();
+  for (let n = 0; n < MAX_PAINTINGS; n++) {
+    const word = SEARCH_WORDS[Math.floor(Math.random() * SEARCH_WORDS.length)];
+    if (!searchCache[word]) {
+      const found = await getJson(
+        MET + '/v1.1/search?hasImages=true&medium=Paintings&q=' + encodeURIComponent(word));
+      searchCache[word] = (found && found.objectIDs) || [];
     }
+    const fresh = searchCache[word].filter((id) => !tried.has(id));
+    if (fresh.length === 0) continue;
+    const id = fresh[Math.floor(Math.random() * fresh.length)];
+    tried.add(id);
+    const obj = await getJson(MET + '/v1/objects/' + id, true);
+    if (!obj) continue;
+    const usable = obj.isPublicDomain && obj.primaryImageSmall &&
+      obj.title && obj.objectURL && (obj.classification || '').includes('Paintings');
+    if (!usable) continue;
+    if (!(await preloadImage(obj.primaryImageSmall))) continue;
+    return {
+      image: obj.primaryImageSmall,
+      title: obj.title,
+      artist: obj.artistDisplayName || 'Unknown',
+      year: obj.objectDate || 'Unknown',
+      link: obj.objectURL
+    };
   }
   return null;
 }
 
+// Put a short message in the artwork area instead of a painting.
+function showMessage(text) {
+  messageEl.textContent = text;
+  messageEl.hidden = false;
+  frameEl.classList.add('no-painting');
+}
+
 // Get a new painting and show it in the frame.
+let loadCount = 0;
 async function loadNewPainting() {
+  const thisLoad = ++loadCount;
   painting = null;
   artEl.hidden = true;
   artEl.removeAttribute('src');
-  frameEl.classList.add('loading');
-  const found = await fetchPainting();
+  showMessage('Loading painting\u2026');
+  let found = null;
+  try {
+    found = await fetchPainting();
+  } catch (e) {
+    found = null; // the Met is not responding
+  }
+  if (thisLoad !== loadCount) return; // a newer load has started, so ignore this one
   if (found) {
     painting = found;
     artEl.src = found.image;
     artEl.hidden = false;
-    frameEl.classList.remove('loading');
+    messageEl.hidden = true;
+    frameEl.classList.remove('no-painting');
     applyBlur(); // the new painting may be a different size
+    if (!restartBtn.hidden) { // the timer finished while the painting was still loading
+      fillDetails();
+      showFinished(true);
+    }
+  } else {
+    showMessage(FRIENDLY_MESSAGE);
   }
 }
 
@@ -200,7 +248,7 @@ function showFinished(finished) {
   startPauseBtn.hidden = finished;
   resetBtn.hidden = finished;
   restartBtn.hidden = !finished;
-  detailsEl.hidden = !finished;
+  detailsEl.hidden = !finished || !painting; // no painting means no details
 }
 
 // Work out the time left from the real clock, so it stays correct
