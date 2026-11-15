@@ -85,6 +85,11 @@ main {
   color: #3d5a47;
 }
 
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* Laptop-sized screens: slightly larger timer, a bit more room */
 @media (min-width: 700px) {
   main {
