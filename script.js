@@ -14,7 +14,7 @@ const infoEl = document.getElementById('painting-info');
 const linkEl = document.getElementById('painting-link');
 
 // How blurred the painting is at the start (in pixels). It reaches 0 at 00:00.
-const MAX_BLUR = 14;
+const MAX_BLUR = 24;
 
 // ---- Painting from the Met Museum (free public API, no key needed) ----
 const MET = 'https://collectionapi.metmuseum.org/public/collection';
@@ -86,6 +86,7 @@ async function loadNewPainting() {
     artEl.src = found.image;
     artEl.hidden = false;
     frameEl.classList.remove('loading');
+    applyBlur(); // the new painting may be a different size
   }
 }
 
@@ -165,8 +166,20 @@ let remainingMs = DURATION_MS; // time left when stopped
 let endTime = 0;               // the real-clock moment the timer will hit zero
 let intervalId = null;         // null means the timer is not running
 
+let lastMs = DURATION_MS; // the time left that the blur was last worked out for
+
+// The blur is a share of the time left, so it works for any timer length.
+// The zoom grows with the blur, so the blurred edges stay outside the artwork area.
+function applyBlur() {
+  const blur = MAX_BLUR * lastMs / DURATION_MS;
+  const width = artEl.clientWidth || 400;
+  artEl.style.setProperty('--blur', blur.toFixed(2));
+  artEl.style.setProperty('--zoom', (1 + 3 * blur / width).toFixed(4));
+}
+
 function showTime(ms) {
-  artEl.style.setProperty('--blur', (MAX_BLUR * ms / DURATION_MS).toFixed(2));
+  lastMs = ms;
+  applyBlur();
   const totalSeconds = Math.ceil(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -235,11 +248,19 @@ function resetAll() {
 resetBtn.addEventListener('click', resetAll);
 restartBtn.addEventListener('click', () => {
   resetAll();
-  loadNewPainting();
+  artEl.addEventListener('load', applyBlur);
+window.addEventListener('resize', applyBlur);
+
+showTime(DURATION_MS); // start strongly blurred, before any painting appears
+loadNewPainting();
 });
 
 document.addEventListener('visibilitychange', () => {
   if (intervalId !== null) tick();
 });
 
+artEl.addEventListener('load', applyBlur);
+window.addEventListener('resize', applyBlur);
+
+showTime(DURATION_MS); // start strongly blurred, before any painting appears
 loadNewPainting();
