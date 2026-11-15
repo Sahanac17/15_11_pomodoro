@@ -1,8 +1,148 @@
-body {
+* {
+  box-sizing: border-box;
   margin: 0;
+}
+
+body {
   min-height: 100vh;
+  background: #dfe9dc;
+  font-family: Helvetica, Arial, sans-serif;
+  color: #3d5a47;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: sans-serif;
+  padding: 24px;
+}
+
+main {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+}
+
+/* White frame around the painting. It takes the shape of the painting,
+   so the whole painting is shown, never stretched or cut off. */
+.frame {
+  width: fit-content;
+  max-width: 100%;
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(60, 80, 60, 0.18);
+  overflow: hidden;
+}
+
+/* No painting (yet): the frame keeps a steady size and holds a short message */
+.frame.no-painting {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: flex;
+}
+
+.message {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #eef3ec;
+  color: #3d5a47;
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* The painting is cut off sharply at the edge of the artwork area,
+   so the blur never spills out or makes soft, fuzzy edges. */
+.art-box {
+  overflow: hidden;
+  line-height: 0;
+}
+
+.art {
+  display: block;
+  max-width: 100%;
+  max-height: 55vh;
+  width: auto;
+  height: auto;
+  /* --blur and --zoom are set by script.js: strong blur at the start, none at 00:00.
+     While blurred, the painting is zoomed in a little so its see-through
+     blurred edges stay outside the artwork area. */
+  filter: blur(calc(var(--blur, 24) * 1px));
+  transform: scale(var(--zoom, 1.3));
+}
+
+.time {
+  font-size: clamp(52px, 17vw, 72px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.button {
+  font: 700 15px Helvetica, Arial, sans-serif;
+  padding: 12px 24px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.start {
+  background: #5f8f72;
+  color: #fff;
+}
+
+.reset {
+  background: #fff;
+  color: #3d5a47;
+}
+
+/* Painting details: shown only when the timer is finished */
+.details {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #3d5a47;
+  background: #fff;
+  padding: 12px 18px;
+  border-radius: 14px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.details b {
+  display: block;
+  font-size: 17px;
+}
+
+.details a {
+  display: inline-block;
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Laptop-sized screens: slightly larger timer, a bit more room */
+@media (min-width: 700px) {
+  main {
+    gap: 28px;
+  }
+
+  .time {
+    font-size: clamp(64px, 6vw, 88px);
+  }
 }
