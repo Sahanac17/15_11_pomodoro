@@ -84,6 +84,22 @@ main {
   color: #3d5a47;
 }
 
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.status {
+  font-size: 14px;
+}
+
+/* When a real painting is loaded it replaces the coloured placeholder */
+.art.photo {
+  background-image: var(--photo);
+  background-size: cover;
+  background-position: center;
+}
+
 /* Painting details: shown only when the timer is finished */
 .details {
   font-size: 14px;

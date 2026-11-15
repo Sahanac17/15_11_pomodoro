@@ -8,9 +8,104 @@ const resetBtn = document.getElementById('reset');
 const artEl = document.getElementById('art');
 const restartBtn = document.getElementById('restart');
 const detailsEl = document.getElementById('details');
+const statusEl = document.getElementById('status');
+const titleEl = document.getElementById('painting-title');
+const infoEl = document.getElementById('painting-info');
+const linkEl = document.getElementById('painting-link');
 
 // How blurred the painting is at the start (in pixels). It reaches 0 at 00:00.
 const MAX_BLUR = 14;
+
+// ---- Painting from the Met Museum (free public API, no key needed) ----
+const MET = 'https://collectionapi.metmuseum.org/public/collection';
+const SEARCH_WORDS = ['flowers', 'river', 'portrait', 'landscape', 'sky',
+                      'garden', 'harbor', 'sunset', 'village', 'still life'];
+const MAX_TRIES = 10;
+
+let painting = null; // the painting for this session: { image, title, artist, year, link }
+const searchCache = {};
+
+async function getJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Met API answered ' + response.status);
+  return response.json();
+}
+
+// Wait until the picture has really loaded in the browser.
+function preloadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = () => reject(new Error('image did not load'));
+    img.src = url;
+  });
+}
+
+// Pick a random painting that is public domain and has an image.
+// Everything shown comes straight from the Met's data.
+async function fetchPainting() {
+  for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    try {
+      const word = SEARCH_WORDS[Math.floor(Math.random() * SEARCH_WORDS.length)];
+      if (!searchCache[word]) {
+        const found = await getJson(
+          MET + '/v1.1/search?hasImages=true&medium=Paintings&q=' + encodeURIComponent(word));
+        searchCache[word] = found.objectIDs || [];
+      }
+      const ids = searchCache[word];
+      if (ids.length === 0) continue;
+      const id = ids[Math.floor(Math.random() * ids.length)];
+      const obj = await getJson(MET + '/v1/objects/' + id);
+      const usable = obj.isPublicDomain && obj.primaryImageSmall &&
+        obj.title && obj.objectURL && (obj.classification || '').includes('Paintings');
+      if (!usable) continue;
+      await preloadImage(obj.primaryImageSmall);
+      return {
+        image: obj.primaryImageSmall,
+        title: obj.title,
+        artist: obj.artistDisplayName || 'Artist not listed',
+        year: obj.objectDate || 'Year not listed',
+        link: obj.objectURL
+      };
+    } catch (e) {
+      // Try again with another painting.
+    }
+  }
+  return null;
+}
+
+// Get a new painting. Start waits until it is ready.
+async function loadNewPainting() {
+  painting = null;
+  artEl.classList.remove('photo');
+  startPauseBtn.disabled = true;
+  statusEl.textContent = 'Loading painting\u2026';
+  statusEl.hidden = false;
+  const found = await fetchPainting();
+  if (found) {
+    painting = found;
+    artEl.style.setProperty('--photo', 'url("' + found.image + '")');
+    artEl.classList.add('photo');
+    statusEl.hidden = true;
+    startPauseBtn.disabled = false;
+  } else {
+    statusEl.textContent = 'Sorry, I could not get a painting. Please reload the page.';
+  }
+}
+
+// The painting details are only put on the page when the timer is finished.
+function fillDetails() {
+  if (!painting) return;
+  titleEl.textContent = painting.title;
+  infoEl.textContent = painting.artist + ' \u00b7 ' + painting.year;
+  linkEl.href = painting.link;
+}
+
+function clearDetails() {
+  titleEl.textContent = '';
+  infoEl.textContent = '';
+  linkEl.removeAttribute('href');
+}
 
 // ---- Bell (Soft Chime), made with the browser's built-in Web Audio ----
 let audioCtx = null;   // created on the first click, because browsers need a click before playing sound
@@ -106,6 +201,7 @@ function tick() {
   showTime(remainingMs);
   if (remainingMs === 0) {
     stop('Start');
+    fillDetails();
     showFinished(true);
   }
 }
@@ -135,12 +231,19 @@ function resetAll() {
   cancelBell();
   remainingMs = DURATION_MS;
   showFinished(false);
+  clearDetails();
   showTime(remainingMs);
 }
 
+// Reset keeps the same painting. Only Restart session loads a new one.
 resetBtn.addEventListener('click', resetAll);
-restartBtn.addEventListener('click', resetAll);
+restartBtn.addEventListener('click', () => {
+  resetAll();
+  loadNewPainting();
+});
 
 document.addEventListener('visibilitychange', () => {
   if (intervalId !== null) tick();
 });
+
+loadNewPainting();

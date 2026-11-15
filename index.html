@@ -9,7 +9,7 @@
 <body>
   <main>
     <div class="frame">
-      <div class="art" id="art" aria-label="Artwork placeholder"></div>
+      <div class="art" id="art" aria-label="Painting (blurred until the timer ends)"></div>
     </div>
     <div class="time" id="time">00:15</div>
     <div class="buttons">
@@ -17,10 +17,11 @@
       <button type="button" class="button reset" id="reset">Reset</button>
       <button type="button" class="button start" id="restart" hidden>Restart session</button>
     </div>
+    <p class="status" id="status" hidden></p>
     <div class="details" id="details" hidden>
-      <b>Painting name</b>
-      Artist name &middot; Year<br>
-      <a href="https://www.metmuseum.org/" target="_blank" rel="noopener noreferrer">Read about this painting</a>
+      <b id="painting-title"></b>
+      <span id="painting-info"></span><br>
+      <a id="painting-link" href="#" target="_blank" rel="noopener noreferrer">Read about this painting</a>
     </div>
   </main>
   <script src="script.js"></script>
