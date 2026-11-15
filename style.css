@@ -45,11 +45,10 @@ main {
     radial-gradient(circle at 72% 55%, #f6d65a 0 13%, transparent 14%),
     radial-gradient(circle at 40% 70%, #e8932b 0 11%, transparent 12%),
     linear-gradient(160deg, #4f8f94, #2f5f73);
-}
-
-.art.blurred {
-  filter: blur(14px);
-  transform: scale(1.08);
+  /* --blur is set by script.js: 14 at the start, 0 when the time is up.
+     The painting grows a little while blurred so the soft edges stay hidden. */
+  filter: blur(calc(var(--blur, 14) * 1px));
+  transform: scale(calc(1 + var(--blur, 14) * 0.0057));
 }
 
 .time {
